@@ -92,7 +92,7 @@ class MainMenu {
             // 테두리 출력 완료 40*29 네모 
 
             gotoxy(32, 8);
-            // logo print code need
+            // logo print code needㅇ
 
 
             int input = 0;
