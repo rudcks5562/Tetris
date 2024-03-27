@@ -22,3 +22,6 @@
 
 - 0325 현황.
 - ![tetris_0325_A](https://github.com/rudcks5562/Tetris/assets/72645618/8cfe5f75-35ce-4a02-977b-a41a3de6f5f7)
+-0328 업데이트
+  ![설계_초안_tet](https://github.com/rudcks5562/Tetris/assets/72645618/b30f253c-5da3-4ac2-bf5e-f2109d9b1a4d)
+설계대로 클래스 구조 변경 및 블록 7개 원형(ㅡ,ㅁ,ㅗ,번개,역번개,왼총(ㄱ),오른총) 추가됨
