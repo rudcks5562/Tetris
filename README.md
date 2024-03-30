@@ -28,3 +28,8 @@
   ![설계_초안_tet](https://github.com/rudcks5562/Tetris/assets/72645618/b30f253c-5da3-4ac2-bf5e-f2109d9b1a4d)
   
   설계대로 클래스 구조 변경 및 블록 7개 원형(ㅡ,ㅁ,ㅗ,번개,역번개,왼총(ㄱ),오른총) 추가됨
+- 0331 업데이트
+- ![IMG_7937](https://github.com/rudcks5562/Tetris/assets/72645618/fa69f83e-1be6-4bbe-bfd9-04b998760c19)
+종이로 플로우를 대략적으로 그려봄.
+제일 중요한 gamemanager의 플로우를 보면 keymanager의 입력 듣기를 실행하는 와중에 gamemanager 내부에서 쉐도잉과 블록의 회전, 충돌, 점수환산등의 처리를 마치고 이것이 규칙에 어긋나지 않으면 csm에서 콘솔에 그림을 그려주는 과정을 대략적으로 서술하였음.
+이제 남은건 구현.
