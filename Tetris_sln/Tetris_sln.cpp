@@ -60,8 +60,9 @@ void CursorView(char show)		//커서 깜박이는거 숨기는 함수
 class Blocks {// 제시된 블록을 가져다 쓰기위한 클래스임. 다른 기능은 필요없음.
 
 private:
-    static Blocks BlockManager;// singleton pattern
-    Blocks() {};
+    
+    Blocks()
+    {};
     ~Blocks() {};
     Blocks(const Blocks& bref) {};// 상속 복사 생성 금지.
     Blocks& operator = (const Blocks & ref){};
@@ -261,6 +262,7 @@ public:
     }
 
     static Blocks& GetInstance() {// singleton
+        static Blocks BlockManager;// singleton pattern
 
         return BlockManager;
 
@@ -535,12 +537,14 @@ public:
     }
     void PlayNextBlockUI() {// 다음 블록이 오는 곳 UI만!
 
-
+      
+        
 
 
     }
     void PlayNextBlockChange() {// 다음 블록 도형 받아서 그리기 
 
+        Blocks& bm = Blocks::GetInstance();//singletone used by local 
 
 
 
@@ -607,12 +611,11 @@ class GameManager {// 게임 관리 해주는 클래스.
         ConsoleViewManager GMcvm;// 게임매니저 내부 콘솔뷰매니저.
 
 
-
     public:
         GameManager()
-            :GamePlay_Local_X{ 0 }, GamePlay_Local_Y{ 0 }, MapStart_X{ 40 }, MapStart_Y{ 25 }, map{}, Score{ 0 }, Combo{ 0 }, GameState{0}
+            :GamePlay_Local_X{ 0 }, GamePlay_Local_Y{ 0 }, MapStart_X{ 40 }, MapStart_Y{ 25 }, map{}, Score{ 0 }, Combo{ 0 }, GameState{ 0 }
         {
-
+            
 
 
 
