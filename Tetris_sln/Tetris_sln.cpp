@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <conio.h>
 
+//■ ▦ 블록 글자모음.
 
 // 전처리 구역 
 #define VERTICAL_SIZE 40// 메인메뉴 수직 사이즈
@@ -237,23 +238,23 @@ public:
 
             break;
         case 2:
-            return Block1[RotateAngle][y][x];
+            return Block2[RotateAngle][y][x];
             break;
 
         case 3:
-            return Block1[RotateAngle][y][x];
+            return Block3[RotateAngle][y][x];
             break;
         case 4: 
-            return Block1[RotateAngle][y][x];
+            return Block4[RotateAngle][y][x];
             break;
         case 5: 
-            return Block1[RotateAngle][y][x];
+            return Block5[RotateAngle][y][x];
          break;
         case 6:
-            return Block1[RotateAngle][y][x];
+            return Block6[RotateAngle][y][x];
             break;
         case 7:
-            return Block1[RotateAngle][y][x];
+            return Block7[RotateAngle][y][x];
             break;
 
 
@@ -368,7 +369,7 @@ public:
     }
 
 
-    int Listen_key_GamePlay() {// 수정 완료.
+    int Listen_key_GamePlay() {// 수정 완료. 키보드 입력을 enum의 특정 정수로 변환하여 리턴해준다.
 
   
             //gotoxy(60, 30); 
@@ -422,16 +423,27 @@ public:
 };
 
 
-
+// console drawing class
 class ConsoleViewManager {
 
-public:
-    int Cursor_X;// 콘솔뷰가 UI를 그릴 커서 시작점 좌표임.
-    int Cursor_Y;
 
+
+private:
+    struct PlayerPointer
+    {
+        int Cursor_X;
+        int Cursor_Y;
+        int BlocksNums;
+        int RotateState;
+
+    } typedef pp;
+
+    pp cur_point;
+
+public:
 
     ConsoleViewManager()
-        :Cursor_Y{ 0 }, Cursor_X{ 0 }
+        :cur_point{}
     {
 
 
@@ -523,32 +535,34 @@ public:
 
     // 메인 콘솔 그리기 기능 끝.
 
-
+    //UI---
 
     void PlayLine() {// singleplay ui 라인선 그리기
 
 
 
     }
-    void PlayDescription() {// 싱글플레이 부가설명과 스코어 
+    void PlayDescription() {// 싱글플레이 부가설명과 스코어 그리기
 
 
 
     }
-    void PlayNextBlockUI() {// 다음 블록이 오는 곳 UI만!
+    void PlayNextBlockUI() {// 다음 블록이 오는 곳 UI만! 그리기
 
       
         
 
 
     }
-    void PlayNextBlockChange() {// 다음 블록 도형 받아서 그리기 
+    void PlayNextBlockChange() {// 다음 블록 도형 받아서 그리기 - UI안에  
 
         Blocks& bm = Blocks::GetInstance();//singletone used by local 
 
 
 
     }
+
+    // block draw---
 
     void PlayShadowing() {// 쉐도잉 구현.
 
@@ -557,21 +571,80 @@ public:
 
 
     }
-    void PlaySpawnBlock() {// 블록 시작점에 소환.
+    void PlaySpawnBlock(int BlockNums,int RotateState) {// 블록 시작점에 소환. rand 함수 활용해서 인자 넣을 것.
+
+        this->cur_point.Cursor_X = 22;
+        this->cur_point.Cursor_Y = 1;
+        this->cur_point.BlocksNums = BlockNums;
+        this->cur_point.RotateState = RotateState;
+
+        Blocks& bm = Blocks::GetInstance();
+
+        for (int y = 0; y < 4; y++) {
+            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            for (int x = 0; x < 4; x++) {
+                int elements= bm.Get_Block_One(RotateState, y, x, BlockNums);
+                (elements == 1) ? std::cout << "■" : std::cout << "  ";
 
 
+            }
+            this->cur_point.Cursor_Y++;
+
+        }
 
 
 
     }
-    void PlayRotateBlock() {// 현위치에서 블록 회전.-> 쉐도잉과 연계되어야함.
+    void PlayRotateBlock(int RotateState) {// 현위치에서 블록 회전.-> 쉐도잉과 연계되어야함.+ 이미 state는 정제되어서 제시되어야 함 gm에서 NextRotateState를 5로 나눌것(음수처리 추가).
+
+        //기존 좌표에서 4,4 구역을 지우고 회전된 블록을 다시 출력한다. 
+        
+        this->cur_point.RotateState = RotateState;
 
 
+        Blocks& bm = Blocks::GetInstance();
+        for (int y = 0; y < 4; y++) {
+            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            for (int x = 0; x < 4; x++) {
+               std::cout << "  ";
+            }
+            this->cur_point.Cursor_Y++;
+        }
+        for (int y = 0; y < 4; y++) {
+            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            for (int x = 0; x < 4; x++) {
+                int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
+                (elements == 1) ? std::cout << "■" : std::cout << "  ";
+            }
+            this->cur_point.Cursor_Y++;
 
+        }
 
     }
-    void PlayMoveBlock() {// 방향키 입력에 따른 현 블록 위치 재지정.
+    void PlayMoveBlock(int Coord_x,int Coord_y) {// 방향키 입력에 따른 현 블록 위치 재지정.<여기는 cvm이기때문에 충돌처리는 gm에서 이미 거친 상태라 가정하여 출력만 한다.>
 
+
+        this->cur_point.Cursor_X = Coord_x;
+        this->cur_point.Cursor_Y = Coord_y;
+
+        Blocks& bm = Blocks::GetInstance();
+        for (int y = 0; y < 5; y++) {
+            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            for (int x = 0; x < 8; x++) {
+                std::cout << "  ";
+            }
+            this->cur_point.Cursor_Y++;
+        }
+
+        for (int y = 0; y < 4; y++) {
+            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            for (int x = 0; x < 4; x++) {
+                int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
+                (elements == 1) ? std::cout << "■" : std::cout << "  ";
+            }
+            this->cur_point.Cursor_Y++;
+
+        }
 
 
     }
@@ -582,7 +655,14 @@ public:
 
 
     }
+    void PlayMapShow() {// 기록배열로부터 맵 갱신
 
+
+
+
+    }
+
+    
 
 
 };
@@ -613,7 +693,7 @@ class GameManager {// 게임 관리 해주는 클래스.
 
     public:
         GameManager()
-            :GamePlay_Local_X{ 0 }, GamePlay_Local_Y{ 0 }, MapStart_X{ 40 }, MapStart_Y{ 25 }, map{}, Score{ 0 }, Combo{ 0 }, GameState{ 0 }
+            :GamePlay_Local_X{ 0 }, GamePlay_Local_Y{ 0 }, MapStart_X{ 40 }, MapStart_Y{ 25 }, map{}, Score{ 0 }, Combo{ 0 }, GameState{ 0 }, GMcvm{}, GMkm{}
         {
             
 
@@ -675,12 +755,64 @@ class GameManager {// 게임 관리 해주는 클래스.
             gotoxy(22, 1);// 도형 떨어지기 좋은 좌표 이동 
             GamePlay_Local_X = GAME_SINGLE_X;
             GamePlay_Local_Y = GAME_SINGLE_Y;
-           // std::cout << "here!";
 
+
+           // std::cout << "here!";
+            int cur_rotate = 0;
+            
+            GMcvm.PlaySpawnBlock(4, 2);// 초기진행(판단)도 구현해야함.
 
             while (GameState==1) {// 게임진행 가능시 지속적으로 방향키 입력을 받아오도록 한다. 
                 Sleep(150);// 최적화 
                  int cmd= GMkm.Listen_key_GamePlay();// 키를 읽는다 계속.
+                 switch (cmd) {// 입력된 키에 따른 명령 수행.
+
+                 case AP:// 각도변환 ++90'
+                     cur_rotate++;
+                     if (cur_rotate <= 4) {
+                         cur_rotate = 0;
+                     }
+                     GMcvm.PlayRotateBlock(cur_rotate);
+                     break;
+
+                 case AD:// 각도변환 --90'
+                     cur_rotate--;
+                     if (cur_rotate < 0) {
+                         cur_rotate = 3;
+                     }
+                     GMcvm.PlayRotateBlock(cur_rotate);
+
+                     break;
+
+                 case ML:// 이동 왼쪽
+                     GamePlay_Local_X--;
+                     // valid check need
+                     GMcvm.PlayMoveBlock(this->GamePlay_Local_X,this->GamePlay_Local_Y);
+                     break;
+                 case MR:// 이동 오른쪽
+                     GamePlay_Local_X++;
+                     // valid check need
+                     GMcvm.PlayMoveBlock(this->GamePlay_Local_X, this->GamePlay_Local_Y);
+                     break;
+
+                 case MD:// 이동 하단
+                     GamePlay_Local_Y++;
+                     // valid check need
+                     GMcvm.PlayMoveBlock(this->GamePlay_Local_X, this->GamePlay_Local_Y);
+                     break;
+                 case STRIKE:// 이동 최하단 충돌지점.
+                     // shadowing need
+
+                     break;
+                 }
+                 
+                 
+
+            
+
+
+
+
 
                  // 작업 이어서 할 구간. 충돌체크랑 맵이랑 콘솔 연동하는 파트와 회전 및 방향키 작동 테스트 하면 됨. 
                  // 세부적으로는 하단에 라인 늘어나는거나 속도조절 UI는 일단 위의 것 완성하고 진행할 것. 0418 
