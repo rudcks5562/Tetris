@@ -591,8 +591,9 @@ public:
             this->cur_point.Cursor_Y++;
 
         }
-
-
+        this->cur_point.Cursor_X = 22;
+        this->cur_point.Cursor_Y = 1;
+        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
 
     }
     void PlayRotateBlock(int RotateState) {// 현위치에서 블록 회전.-> 쉐도잉과 연계되어야함.+ 이미 state는 정제되어서 제시되어야 함 gm에서 NextRotateState를 5로 나눌것(음수처리 추가).
@@ -600,52 +601,65 @@ public:
         //기존 좌표에서 4,4 구역을 지우고 회전된 블록을 다시 출력한다. 
         
         this->cur_point.RotateState = RotateState;
+        int temp_x = this->cur_point.Cursor_X;
+        int temp_y = this->cur_point.Cursor_Y;
 
 
         Blocks& bm = Blocks::GetInstance();
-        for (int y = 0; y < 4; y++) {
-            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
-            for (int x = 0; x < 4; x++) {
+        for (int y = 0; y < 5; y++) {
+            gotoxy(temp_x, temp_y);
+            for (int x = 0; x < 8; x++) {
                std::cout << "  ";
             }
-            this->cur_point.Cursor_Y++;
+            temp_y++;
         }
+        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+         temp_x = this->cur_point.Cursor_X;
+         temp_y = this->cur_point.Cursor_Y;
+
         for (int y = 0; y < 4; y++) {
-            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            gotoxy(temp_x, temp_y);
             for (int x = 0; x < 4; x++) {
                 int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
                 (elements == 1) ? std::cout << "■" : std::cout << "  ";
             }
-            this->cur_point.Cursor_Y++;
+            temp_y++;
 
         }
-
+        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
     }
     void PlayMoveBlock(int Coord_x,int Coord_y) {// 방향키 입력에 따른 현 블록 위치 재지정.<여기는 cvm이기때문에 충돌처리는 gm에서 이미 거친 상태라 가정하여 출력만 한다.>
+
 
 
         this->cur_point.Cursor_X = Coord_x;
         this->cur_point.Cursor_Y = Coord_y;
 
+        int temp_x = this->cur_point.Cursor_X;
+        int temp_y = this->cur_point.Cursor_Y;
+
         Blocks& bm = Blocks::GetInstance();
         for (int y = 0; y < 5; y++) {
-            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            gotoxy(temp_x, temp_y);
             for (int x = 0; x < 8; x++) {
                 std::cout << "  ";
             }
-            this->cur_point.Cursor_Y++;
+            temp_y++;
         }
+        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+        temp_x = this->cur_point.Cursor_X;
+        temp_y = this->cur_point.Cursor_Y;
 
         for (int y = 0; y < 4; y++) {
-            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+            gotoxy(temp_x, temp_y);
             for (int x = 0; x < 4; x++) {
                 int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
                 (elements == 1) ? std::cout << "■" : std::cout << "  ";
             }
-            this->cur_point.Cursor_Y++;
+            temp_y++;
 
         }
-
+        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
 
     }
 
@@ -758,9 +772,10 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
            // std::cout << "here!";
-            int cur_rotate = 0;
+            int cur_blocknums = 4;
+            int cur_rotate = 0;// 넘버링과 회전 변수에 랜덤함수 필요 ***(다음 개발일정에 주로 봐야할 곳 표시)
             
-            GMcvm.PlaySpawnBlock(4, 2);// 초기진행(판단)도 구현해야함.
+            GMcvm.PlaySpawnBlock(cur_blocknums, cur_rotate);// 초기진행(판단)도 구현해야함.  ***(다음 개발일정에 주로 봐야할 곳 표시)
 
             while (GameState==1) {// 게임진행 가능시 지속적으로 방향키 입력을 받아오도록 한다. 
                 Sleep(150);// 최적화 
@@ -786,30 +801,27 @@ class GameManager {// 게임 관리 해주는 클래스.
 
                  case ML:// 이동 왼쪽
                      GamePlay_Local_X--;
-                     // valid check need
+                     // valid check need  ***(다음 개발일정에 주로 봐야할 곳 표시) 
                      GMcvm.PlayMoveBlock(this->GamePlay_Local_X,this->GamePlay_Local_Y);
                      break;
                  case MR:// 이동 오른쪽
                      GamePlay_Local_X++;
-                     // valid check need
+                     // valid check need  ***(다음 개발일정에 주로 봐야할 곳 표시)
                      GMcvm.PlayMoveBlock(this->GamePlay_Local_X, this->GamePlay_Local_Y);
                      break;
 
                  case MD:// 이동 하단
                      GamePlay_Local_Y++;
-                     // valid check need
+                     // valid check need  ***(다음 개발일정에 주로 봐야할 곳 표시)
                      GMcvm.PlayMoveBlock(this->GamePlay_Local_X, this->GamePlay_Local_Y);
                      break;
                  case STRIKE:// 이동 최하단 충돌지점.
-                     // shadowing need
+                     // shadowing need  ***(다음 개발일정에 주로 봐야할 곳 표시)
 
                      break;
                  }
                  
                  
-
-            
-
 
 
 
@@ -817,6 +829,8 @@ class GameManager {// 게임 관리 해주는 클래스.
                  // 작업 이어서 할 구간. 충돌체크랑 맵이랑 콘솔 연동하는 파트와 회전 및 방향키 작동 테스트 하면 됨. 
                  // 세부적으로는 하단에 라인 늘어나는거나 속도조절 UI는 일단 위의 것 완성하고 진행할 것. 0418 
 
+            // 0508 블록 회전과 이동 그리고 블록 스폰 구현완료.
+                // 다음에 할 일- 배열맵과 연동 및 쌓기와 충돌처리 구현. + 쉐도잉 + UI작업 strike 명령어 구현 필요. 
 
 
             }
