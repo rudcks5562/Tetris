@@ -5,7 +5,7 @@
 #include <Windows.h>
 #include <conio.h>
 
-//■ ▦ 블록 글자모음.
+//■ ▦ ▣ 블록 글자모음.
 
 // 전처리 구역 
 #define VERTICAL_SIZE 40// 메인메뉴 수직 사이즈
@@ -17,6 +17,8 @@
 #define MENU_CHOICEBAR_X 60//위와같음.
 #define GAME_SINGLE_X 22// 싱글플레이 콘솔 커서 시작점.
 #define GAME_SINGLE_Y 1
+#define GAME_SINGLE_VSIZE 30
+#define GAME_SINGLE_HSIZE 20
 
 enum KEYBOARD// 키보드 입력 224 다음에 들어오는 숫자들.
 {
@@ -117,14 +119,14 @@ public:
       {1,1,1,1},
       {0,0,0,0} },//'ㅡ'
 
-    { {0,0,1,0},
-      {0,0,1,0},
-      {0,0,1,0},
-      {0,0,1,0} },
+    { {0,1,0,0},
+      {0,1,0,0},
+      {0,1,0,0},
+      {0,1,0,0} },
 
     { {0,0,0,0},
-      {0,0,0,0},
       {1,1,1,1},
+      {0,0,0,0},
       {0,0,0,0} },
 
     { {0,0,1,0},
@@ -136,24 +138,24 @@ public:
     const int Block4[4][4][4] = {
 
     { {0,0,0,0},
-      {0,0,1,0},
-      {0,1,1,1},
+      {0,1,0,0},
+      {1,1,1,0},
       {0,0,0,0} },//'ㅗ'
 
     { {0,0,0,0},
-      {0,0,1,0},
-      {0,0,1,1},
-      {0,0,1,0} },
+      {0,1,0,0},
+      {0,1,1,0},
+      {0,1,0,0} },
 
     { {0,0,0,0},
       {0,0,0,0},
-      {0,1,1,1},
-      {0,0,1,0} },
+      {1,1,1,0},
+      {0,1,0,0} },
 
     { {0,0,0,0},
-      {0,0,1,0},
-      {0,1,1,0},
-      {0,0,1,0} }
+      {0,1,0,0},
+      {1,1,0,0},
+      {0,1,0,0} }
 
     };// ㅗ 블록 
     const int Block5[4][4][4] = {
@@ -428,22 +430,11 @@ class ConsoleViewManager {
 
 
 
-private:
-    struct PlayerPointer
-    {
-        int Cursor_X;
-        int Cursor_Y;
-        int BlocksNums;
-        int RotateState;
-
-    } typedef pp;
-
-    pp cur_point;
 
 public:
 
     ConsoleViewManager()
-        :cur_point{}
+       
     {
 
 
@@ -571,97 +562,8 @@ public:
 
 
     }
-    void PlaySpawnBlock(int BlockNums,int RotateState) {// 블록 시작점에 소환. rand 함수 활용해서 인자 넣을 것.
+ 
 
-        this->cur_point.Cursor_X = 22;
-        this->cur_point.Cursor_Y = 1;
-        this->cur_point.BlocksNums = BlockNums;
-        this->cur_point.RotateState = RotateState;
-
-        Blocks& bm = Blocks::GetInstance();
-
-        for (int y = 0; y < 4; y++) {
-            gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
-            for (int x = 0; x < 4; x++) {
-                int elements= bm.Get_Block_One(RotateState, y, x, BlockNums);
-                (elements == 1) ? std::cout << "■" : std::cout << "  ";
-
-
-            }
-            this->cur_point.Cursor_Y++;
-
-        }
-        this->cur_point.Cursor_X = 22;
-        this->cur_point.Cursor_Y = 1;
-        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
-
-    }
-    void PlayRotateBlock(int RotateState) {// 현위치에서 블록 회전.-> 쉐도잉과 연계되어야함.+ 이미 state는 정제되어서 제시되어야 함 gm에서 NextRotateState를 5로 나눌것(음수처리 추가).
-
-        //기존 좌표에서 4,4 구역을 지우고 회전된 블록을 다시 출력한다. 
-        
-        this->cur_point.RotateState = RotateState;
-        int temp_x = this->cur_point.Cursor_X;
-        int temp_y = this->cur_point.Cursor_Y;
-
-
-        Blocks& bm = Blocks::GetInstance();
-        for (int y = 0; y < 5; y++) {
-            gotoxy(temp_x, temp_y);
-            for (int x = 0; x < 8; x++) {
-               std::cout << "  ";
-            }
-            temp_y++;
-        }
-        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
-         temp_x = this->cur_point.Cursor_X;
-         temp_y = this->cur_point.Cursor_Y;
-
-        for (int y = 0; y < 4; y++) {
-            gotoxy(temp_x, temp_y);
-            for (int x = 0; x < 4; x++) {
-                int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
-                (elements == 1) ? std::cout << "■" : std::cout << "  ";
-            }
-            temp_y++;
-
-        }
-        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
-    }
-    void PlayMoveBlock(int Coord_x,int Coord_y) {// 방향키 입력에 따른 현 블록 위치 재지정.<여기는 cvm이기때문에 충돌처리는 gm에서 이미 거친 상태라 가정하여 출력만 한다.>
-
-
-
-        this->cur_point.Cursor_X = Coord_x;
-        this->cur_point.Cursor_Y = Coord_y;
-
-        int temp_x = this->cur_point.Cursor_X;
-        int temp_y = this->cur_point.Cursor_Y;
-
-        Blocks& bm = Blocks::GetInstance();
-        for (int y = 0; y < 5; y++) {
-            gotoxy(temp_x, temp_y);
-            for (int x = 0; x < 8; x++) {
-                std::cout << "  ";
-            }
-            temp_y++;
-        }
-        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
-        temp_x = this->cur_point.Cursor_X;
-        temp_y = this->cur_point.Cursor_Y;
-
-        for (int y = 0; y < 4; y++) {
-            gotoxy(temp_x, temp_y);
-            for (int x = 0; x < 4; x++) {
-                int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
-                (elements == 1) ? std::cout << "■" : std::cout << "  ";
-            }
-            temp_y++;
-
-        }
-        gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
-
-    }
 
 
     void PlayEraseRow() {// 배열 확인해서 모두 차있는 경우 지운 다음 그만큼 땡기기 + 물리 적용해 공중에 떠있는 도형 없도록 하기. 
@@ -669,12 +571,55 @@ public:
 
 
     }
-    void PlayMapShow() {// 기록배열로부터 맵 갱신
+    void PlayMapShow(int (*maps)[GAME_SINGLE_HSIZE]) {// 기록배열로부터 맵 갱신 cvm이므로 그림만 그린다. 
+
+        // 로직
+        // 게임 플레이 하다가 진행중 블록에 하단 이동에 대한 충돌이 일어남. 또는 시작 때
+        // 쉐도잉 위치에 적재(1의 경우에만)
+        // 배열 갱신
+        // 갱신된 배열을 바탕으로 콘솔뷰 갱신***(해당 함수)
+        // 다음 블록 스폰
+
+        
+
+        for (int i = 0; i < GAME_SINGLE_VSIZE; i++) {
+            gotoxy(0, i);
+            for (int j = 0; j < GAME_SINGLE_HSIZE; j++) {
+                
+                if (maps[i][j] == 3) {// 기본 틀
+
+                    std::cout << "▦"; 
+
+                }
+                else if (maps[i][j] == 2) {// 누적된 블록들
+
+                    std::cout << "▣";
+                }
+                else if (maps[i][j] == 4) {// shadowing 
+
+                    std::cout << "▒";
+
+                }
+                else if(maps[i][j]==0) {
+
+                    std::cout << "  ";
+
+                }
+                else if (maps[i][j] == 1) {
+                    std::cout << "■";
+                }
+
+            }
+
+
+        }
 
 
 
 
-    }
+
+
+    }// checked
 
     
 
@@ -689,32 +634,35 @@ public:
 class GameManager {// 게임 관리 해주는 클래스.
 
     private:
-        int GamePlay_Local_X;// 진행중인 게임 테두리 내부에서 작동할 커서 좌표.
-        int GamePlay_Local_Y;
-        int MapStart_X;// 배열이 인식을 시작할 [0][0] 의 좌표 테스트환경 커서기준 0,0 시작함.
-        int MapStart_Y;
 
         int GameState;// 게임 진행 가능 여부 
-
-        int map[25][40];// size 미정임 , 벡터를 쓸 이유가 없음 = 테트리스 플레이는 고정된 사각형 내부에서 진행하므로.. 
+        int map[GAME_SINGLE_VSIZE][GAME_SINGLE_HSIZE];// size 미정임 , 벡터를 쓸 이유가 없음 = 테트리스 플레이는 고정된 사각형 내부에서 진행하므로.. 
 
         int Score;
         int Combo;
 
         KeyManager GMkm;// 게임매니저 내부의 키매니저 
         ConsoleViewManager GMcvm;// 게임매니저 내부 콘솔뷰매니저.
+        struct PlayerPointer
+        {
+           int Cursor_X;
+           int Cursor_Y;
+           int BlocksNums;
+           int RotateState;
+         } typedef pp;
 
+        pp cur_point;
 
     public:
         GameManager()
-            :GamePlay_Local_X{ 0 }, GamePlay_Local_Y{ 0 }, MapStart_X{ 40 }, MapStart_Y{ 25 }, map{}, Score{ 0 }, Combo{ 0 }, GameState{ 0 }, GMcvm{}, GMkm{}
+            :map{}, Score{ 0 }, Combo{ 0 }, GameState{ 0 }, GMcvm{}, GMkm{}, cur_point{}
         {
             
 
 
 
         }// 생성자.
-        bool Valid_checker(int NextCmd) {// 이동 또는 회전시 기존 배열에 저장된 위치정보+ 제한선에 걸리는지 체크. (충돌체크임)  
+        bool ValidChecker() {// 이동 또는 회전시 기존 배열에 저장된 위치정보+ 제한선에 걸리는지 체크. (충돌체크임)  
 
             bool res = true;
 
@@ -724,70 +672,261 @@ class GameManager {// 게임 관리 해주는 클래스.
             return res;
 
         }
+        bool CursorLimitChecker(int next_x,int next_y) {// 커서가 배열 사이즈 밖으로 나가지 못하도록 움직임 제한.
+
+        
+            if (next_x < 0 || next_x >= GAME_SINGLE_HSIZE-1 || next_y < 0 || next_y >= GAME_SINGLE_VSIZE-1) {
+                return false;
+           }
+
+            return true;
+        }
+        bool PlaySpawnBlock(int BlockNums, int RotateState) {
+
+
+            Blocks& bm = Blocks::GetInstance(); 
+
+            int StartX = 8;
+            int StartY = 1;
+
+            this->cur_point.Cursor_X = StartX;
+            this->cur_point.Cursor_Y = StartY;
+            this->cur_point.BlocksNums = BlockNums;
+            this->cur_point.RotateState = RotateState;
+
+
+            for (int i = 0; i < 4; i++) {
+
+                for (int j = 0; j < 4; j++) {
+
+
+                    int temp_res= bm.Get_Block_One(RotateState, i, j, BlockNums);
+                    if (map[StartY + i][StartX + j] == 2) {
+                        return false;
+                    }
+                    else if (map[StartY + i][StartX + j] == 0) {
+
+                        map[StartY + i][StartX + j] = temp_res;
+
+                    }
+
+                }
+
+            }
+
+            return true;
+
+
+        }
+        bool PlayRotateBlock(int RotateState) {// 현위치에서 블록 회전.-> 쉐도잉과 연계되어야함.+ 이미 state는 정제되어서 제시되어야 함 gm에서 NextRotateState를 5로 나눌것(음수처리 추가).
+
+            //기존 좌표에서 4,4 구역을 지우고 회전된 블록을 다시 출력한다. 
+
+            Blocks& bm = Blocks::GetInstance(); 
+            int temp_x = this->cur_point.Cursor_X;
+            int temp_y = this->cur_point.Cursor_Y;// 로컬 좌표 가져오기
+            bool flag = true;
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+                    int elements = bm.Get_Block_One(RotateState, y, x, this->cur_point.BlocksNums);
+
+                    if (map[temp_y + y][temp_x + x] != 2 && map[temp_y + y][temp_x + x] != 3) {// 2,3 가 아닌 케이스들에 대하여 
+
+
+
+                    }
+                    else if (elements==1&& (map[temp_y + y][temp_x + x] == 2 || map[temp_y + y][temp_x + x] == 3)) {// 2 나 3이 겹치는 곳에 블록이 생성되야한다면 
+                        flag = false;
+                    }
+
+
+                }
+            }// 변환된 값의 4*4를 유효 체크해준다. 
+
+            if (flag == false) {
+                return flag;
+            }
+
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+                    
+                    if (map[temp_y + y][temp_x + x] == 1) {
+                        map[temp_y + y][temp_x + x] = 0;
+                    }
+
+
+                }
+            }// 회전 이전꺼는 지우고 
+
+
+            for (int y = 0; y < 4; y++) {
+               
+                for (int x = 0; x < 4; x++) {
+                    int elements = bm.Get_Block_One(RotateState, y, x, this->cur_point.BlocksNums);
+
+                    if (map[temp_y + y][temp_x + x] != 2&& map[temp_y + y][temp_x + x] != 3 ) {// 2,3 가 아닌 케이스들에 대하여 
+
+                        map[temp_y + y][temp_x + x] = elements;
+
+                    }
+
+
+                }
+            }// 변환된 값의 4*4를 채워준다. 
+           
+            this->cur_point.RotateState = RotateState;
+
+            return true;
+
+        }
+        bool PlayMoveBlock(int Coord_x, int Coord_y) {// 방향키 입력에 따른 현 블록 위치 재지정.<여기는 cvm이기때문에 충돌처리는 gm에서 이미 거친 상태라 가정하여 출력만 한다.>
+
+
+            bool flag = true;
+            int temp_x = this->cur_point.Cursor_X;//이동 전의 좌표는 이곳에 저장.
+            int temp_y = this->cur_point.Cursor_Y;
+            Blocks& bm = Blocks::GetInstance();
+
+
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+                    int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
+
+                    if (map[Coord_y + y][Coord_x + x] != 2 && map[Coord_y + y][Coord_x + x] != 3) {// 2,3 가 아닌 케이스들에 대하여 
+
+                        continue;
+
+                    }
+                    else if (elements==1&&(map[Coord_y + y][Coord_x + x] == 2 || map[Coord_y + y][Coord_x + x] == 3)) {// 2 나 3이 겹치는 곳에 블록이 생성되야한다면 
+                        
+                        
+                        
+                        flag = false;
+                    }
+
+
+                }
+            }// 변환된 값의 4*4를 유효 체크해준다. 
+
+            if (flag == false) {
+                return false;
+            }
+            this->cur_point.Cursor_X = Coord_x;//이동할 좌표로 바로 갱신
+            this->cur_point.Cursor_Y = Coord_y;
+
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+
+                    if (map[temp_y + y][temp_x + x] == 1) {
+                        map[temp_y + y][temp_x + x] = 0;
+                    }
+
+
+                }
+            }// 이동 이전꺼는 지우고 
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+                    int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
+                   
+                    if (map[this->cur_point.Cursor_Y + y][this->cur_point.Cursor_X + x] != 2 && map[this->cur_point.Cursor_Y + y][this->cur_point.Cursor_X + x] != 3) {// 2,3 가 아닌 케이스들에 대하여 
+
+                        map[this->cur_point.Cursor_Y + y][this->cur_point.Cursor_X + x] = elements;
+
+                    }
+
+                }
+
+
+            }
+
+            return true;
+        }
+
+
+
+
+
+
+
         void Test_Play() {// test환경 제시. 
 
             gotoxy(0, 0);
             GameState = 1;
 
-            std::cout << "┏";
-            int vt_size = 25;
-            int hz_size = 40;
+            //std::cout << "▦";
+            int vt_size = GAME_SINGLE_VSIZE;//30
+            int hz_size = GAME_SINGLE_HSIZE;//20
 
-            for (int i = 1; i < vt_size; i++) {
-                gotoxy(2 * i, 0);
-                std::cout << "━";
-            }
-            gotoxy(vt_size * 2, 0);
-            std::cout << "┓";
+            // init 
+            for (int i = 0; i < vt_size; i++) {   //map의 기본 로직 - 1은 현재 움직이고 있는 블록, 2는 쌓인 상태의 블록, 3은 기본 틀,4는 쉐도잉으로 정의한다. 
+                //3은 어떤 경우에도 지워지지 않고 1의 충돌지에는 4로,1이 도달시에는 2로 변환.
+                // 2로 변환되며 클리어 되는 경우 물리적으로 2는 모두 충돌지점까지 낙하하도록 설계. 
 
-            for (int i = 1; i < hz_size; i++)
-            {
-                gotoxy(2 * vt_size, i);
-                std::cout << "┃";
-            }
-            gotoxy(vt_size * 2, hz_size);
-            printf("┛");
+                for (int j = 0; j < hz_size; j++) {
 
-            for (int i = 1; i < vt_size; i++)
-            {
-                gotoxy(2 * i, hz_size);
-                std::cout << "━";
+                    if (i == 0 || j == 0|| i== vt_size-1|| j==hz_size-1) {// 모든 겉테두리를 3으로 감싼 후 ▦ 로 변환할 것이다. 
+                        map[i][j] = 3;
+                    }
+                    else {
+                        map[i][j] = 0;
+                    }
+
+                }
             }
 
-
-            gotoxy(0, hz_size);
-            printf("┗");
-            for (int i = 1; i < hz_size; i++)
-            {
-                gotoxy(0, i);
-                std::cout << "┃";
-            }
-
-            // make line 
+            GMcvm.PlayMapShow(this->map);
 
 
-            gotoxy(22, 1);// 도형 떨어지기 좋은 좌표 이동 
-            GamePlay_Local_X = GAME_SINGLE_X;
-            GamePlay_Local_Y = GAME_SINGLE_Y;
+            // INIT ---
 
 
-           // std::cout << "here!";
-            int cur_blocknums = 4;
+
+
+
+
+
+
+
+            int cur_blocknums = 7;
             int cur_rotate = 0;// 넘버링과 회전 변수에 랜덤함수 필요 ***(다음 개발일정에 주로 봐야할 곳 표시)
             
-            GMcvm.PlaySpawnBlock(cur_blocknums, cur_rotate);// 초기진행(판단)도 구현해야함.  ***(다음 개발일정에 주로 봐야할 곳 표시)
+            PlaySpawnBlock(cur_blocknums, cur_rotate);//2가 없으면 그냥 뜨게 하였음. 
+            GMcvm.PlayMapShow(this->map);
+            std::cout << "?";
+
+
+
 
             while (GameState==1) {// 게임진행 가능시 지속적으로 방향키 입력을 받아오도록 한다. 
                 Sleep(150);// 최적화 
                  int cmd= GMkm.Listen_key_GamePlay();// 키를 읽는다 계속.
+
+                 
+
                  switch (cmd) {// 입력된 키에 따른 명령 수행.
 
                  case AP:// 각도변환 ++90'
+
                      cur_rotate++;
-                     if (cur_rotate <= 4) {
+                     if (cur_rotate == 4) {
                          cur_rotate = 0;
                      }
-                     GMcvm.PlayRotateBlock(cur_rotate);
+                     if (!PlayRotateBlock(cur_rotate)) {
+                         cur_rotate--;
+                         if (cur_rotate < 0) {
+                             cur_rotate = 3;
+                         }
+                     }
                      break;
 
                  case AD:// 각도변환 --90'
@@ -795,33 +934,54 @@ class GameManager {// 게임 관리 해주는 클래스.
                      if (cur_rotate < 0) {
                          cur_rotate = 3;
                      }
-                     GMcvm.PlayRotateBlock(cur_rotate);
+                     if (!PlayRotateBlock(cur_rotate)) {
+                         cur_rotate++;
+                         if (cur_rotate == 4) {
+                             cur_rotate = 0;
+                         }
+
+                     }
 
                      break;
 
                  case ML:// 이동 왼쪽
-                     GamePlay_Local_X--;
-                     // valid check need  ***(다음 개발일정에 주로 봐야할 곳 표시) 
-                     GMcvm.PlayMoveBlock(this->GamePlay_Local_X,this->GamePlay_Local_Y);
+                     if (CursorLimitChecker(this->cur_point.Cursor_X - 1, this->cur_point.Cursor_Y)) {
+
+                         
+
+                         PlayMoveBlock(this->cur_point.Cursor_X-1 , this->cur_point.Cursor_Y);
+
+                     }
+                 
                      break;
                  case MR:// 이동 오른쪽
-                     GamePlay_Local_X++;
-                     // valid check need  ***(다음 개발일정에 주로 봐야할 곳 표시)
-                     GMcvm.PlayMoveBlock(this->GamePlay_Local_X, this->GamePlay_Local_Y);
+                     
+                    
+                     if (CursorLimitChecker(this->cur_point.Cursor_X + 1, this->cur_point.Cursor_Y)) {
+                         
+                         PlayMoveBlock(this->cur_point.Cursor_X+1 , this->cur_point.Cursor_Y);
+                     }
                      break;
 
                  case MD:// 이동 하단
-                     GamePlay_Local_Y++;
-                     // valid check need  ***(다음 개발일정에 주로 봐야할 곳 표시)
-                     GMcvm.PlayMoveBlock(this->GamePlay_Local_X, this->GamePlay_Local_Y);
+                     
+                     if (CursorLimitChecker(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1)) {
+                         
+
+                         PlayMoveBlock(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1);
+                     }
                      break;
                  case STRIKE:// 이동 최하단 충돌지점.
                      // shadowing need  ***(다음 개발일정에 주로 봐야할 곳 표시)
 
+
+
+
+
                      break;
                  }
                  
-                 
+                 GMcvm.PlayMapShow(this->map);
 
 
 
@@ -831,7 +991,9 @@ class GameManager {// 게임 관리 해주는 클래스.
 
             // 0508 블록 회전과 이동 그리고 블록 스폰 구현완료.
                 // 다음에 할 일- 배열맵과 연동 및 쌓기와 충돌처리 구현. + 쉐도잉 + UI작업 strike 명령어 구현 필요. 
-
+                 // 배열에 기록된 데이터를 기반으로 그림을 그릴지 그림을 내려가며 충돌체크를 한 후 충돌시에만 배열을 갱신할지 고민.
+                 //전자는 배열이 0.15초마다 갱신되는 부하가 걸리고 후자는 블록 클래스의 4*4 크기 때문에 구현이 복잡해짐. 
+                 // 후자로 진행해보고 안되면 전자로 하도록 한다. 배열에는 이미 바닥에 깔린 정보만 존재해도 무방하다. 현재 내려가고 있는 블록을 굳이 담을 필요가 없다. 
 
             }
 
