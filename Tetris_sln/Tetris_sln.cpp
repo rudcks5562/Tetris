@@ -4,6 +4,7 @@
 #include <string>
 #include <Windows.h>
 #include <conio.h>
+#include <queue>
 
 //■ ▦ ▣ 블록 글자모음.
 
@@ -323,7 +324,7 @@ public:
     void Listen_key_Menu() {// 
 
         while (!Choice_flag) {// 키보드 입력 받아서 space로 결정하는 코드 
-            Sleep(150);
+            Sleep(50);
             input = _getch();// 키보드 입력 받기 
             prev_Y = Local_Y;
             if (input == MAGIC_KEY) {// 얘네는 입력이 2개로 나눠서 들어온다 방향키
@@ -921,22 +922,61 @@ class GameManager {// 게임 관리 해주는 클래스.
                 }
 
 
+            }// checked! 
+            if (counter > 0) {
+                sort();
             }
-
-            sort();
+   
 
             result = score + (combo * counter);
 
             return result;// 점수 반환 
 
         }
-        void sort() {
+        void sort() {// 빈칸에 대한 이동만 진행. 
+
+            
+            std::queue<int> q;
+
+        for (int j = 1; j < GAME_SINGLE_HSIZE - 1; j++) {// 가로축에 대해 모두 당겨주기 
+
+            
+            q.push(3);
+            for (int i = GAME_SINGLE_VSIZE-1; i >0; i--) {// 기존 열의 정보를 0을 제외하고 추출
+                if (map[i][j] != 0 && map[i][j] != 3)
+                    q.push(map[i][j]);
 
 
+            }
+            
+
+            for (int i = GAME_SINGLE_VSIZE - 1; i > 0; i--) {// 이를 놓을 장소에 모두 0으로 초기화
+
+                if (map[i][j] == 2) {
+                    map[i][j] = 0;
+                }
 
 
+            }
+
+            for (int i = GAME_SINGLE_VSIZE-1; i > 0; i--) {// 그 열에 대해 압축된 정보를 집어넣기.
+
+                if (!q.empty()) {
+                    int elements= q.front();
+
+                    (elements != 3) ? (map[i][j] = elements) : (map[i][j]=3);//?
+
+                    q.pop();
+                }
+               
+            }
 
 
+           
+         }// for end
+                
+            
+         
         }
 
 
@@ -984,7 +1024,7 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
 
-            int cur_blocknums = 7;
+            int cur_blocknums = 3;
             int cur_rotate = 0;// 넘버링과 회전 변수에 랜덤함수 필요 ***(다음 개발일정에 주로 봐야할 곳 표시)
             
             PlaySpawnBlock(cur_blocknums, cur_rotate);//2가 없으면 그냥 뜨게 하였음. 
@@ -1087,7 +1127,20 @@ class GameManager {// 게임 관리 해주는 클래스.
 
                              
                              PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
-                             PlaySpawnBlock(5,0);// TEST CODE
+
+                             int temp_score=0;
+                             do {
+                                 temp_score= EraseChecker(this->Score, this->Combo);
+                                 if (temp_score != this->Score) {
+                                     this->Score += temp_score;
+                                     this->Combo++;
+                                 }
+
+
+                             } while (temp_score != this->Score);
+                             
+
+                             PlaySpawnBlock(3,0);// TEST CODE
                          }
 
                      }
