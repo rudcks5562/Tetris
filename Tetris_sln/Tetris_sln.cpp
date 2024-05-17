@@ -1088,7 +1088,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                      
                      if (CursorLimitChecker(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1)) {
                          
-                         if (DownPossible == false) {// 블록 지점에 대해 모두 조사하여 하단 이동 후 더이상 내려갈 곳이 없다면.
+                         if (DownPossible == false) {// 블록 지점에 대해 모두 조사하여 하단 이동 후 더이상 내려갈 곳이 없다면.(바로굳게 하려면 여기를 하단으로 내리면 된다.)
 
 
                              PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
@@ -1145,8 +1145,8 @@ class GameManager {// 게임 관리 해주는 클래스.
                  case STRIKE:// 이동 최하단 충돌지점.
                      // shadowing need  ***(다음 개발일정에 주로 봐야할 곳 표시)
 
-
-
+                     //4 를 1로 바꾸는 코드(기존 1 제거후) 
+                     // 새로운 블록 스폰하는 코드 
 
 
                      break;
