@@ -559,12 +559,6 @@ public:
  
 
 
-
-    void PlayEraseRow() {// 배열 확인해서 모두 차있는 경우 지운 다음 그만큼 땡기기 + 물리 적용해 공중에 떠있는 도형 없도록 하기. 
-
-
-
-    }
     void PlayMapShow(int (*maps)[GAME_SINGLE_HSIZE]) {// 기록배열로부터 맵 갱신 cvm이므로 그림만 그린다. 
 
         // 로직
@@ -1032,7 +1026,7 @@ class GameManager {// 게임 관리 해주는 클래스.
             std::cout << "?";
 
 
-
+            bool DownPossible = true;
 
             while (GameState==1) {// 게임진행 가능시 지속적으로 방향키 입력을 받아오도록 한다. 
                 Sleep(150);// 최적화 
@@ -1094,10 +1088,30 @@ class GameManager {// 게임 관리 해주는 클래스.
                      
                      if (CursorLimitChecker(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1)) {
                          
+                         if (DownPossible == false) {// 블록 지점에 대해 모두 조사하여 하단 이동 후 더이상 내려갈 곳이 없다면.
+
+
+                             PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
+
+                             int temp_score = 0;
+                             do {
+                                 temp_score = EraseChecker(this->Score, this->Combo);// 압축
+                                 if (temp_score != this->Score) {
+                                     this->Score += temp_score;
+                                     this->Combo++;
+                                 }
+
+
+                             } while (temp_score != this->Score);
+
+
+                             PlaySpawnBlock(3, 0);// TEST CODE
+                             DownPossible = true;
+                         }
 
                          PlayMoveBlock(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1);
 
-                         bool DownPossible = true;
+                        
 
                          for (int i = this->cur_point.Cursor_Y; i < this->cur_point.Cursor_Y + 4; i++) {
 
@@ -1110,6 +1124,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                                    //  gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                                   
                                      if (ValidChecker(j, i) == false) {// 원소가 하나라도 더이상 밑으로 내려가지 못하면 굳히기.
+                                         
                                          DownPossible = false;
                                      }
 
@@ -1123,25 +1138,7 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
 
-                         if (DownPossible == false) {// 블록 지점에 대해 모두 조사하여 하단 이동 후 더이상 내려갈 곳이 없다면.
-
-                             
-                             PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
-
-                             int temp_score=0;
-                             do {
-                                 temp_score= EraseChecker(this->Score, this->Combo);
-                                 if (temp_score != this->Score) {
-                                     this->Score += temp_score;
-                                     this->Combo++;
-                                 }
-
-
-                             } while (temp_score != this->Score);
-                             
-
-                             PlaySpawnBlock(3,0);// TEST CODE
-                         }
+ 
 
                      }
                      break;
