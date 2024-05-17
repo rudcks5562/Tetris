@@ -555,13 +555,6 @@ public:
 
     // block draw---
 
-    void PlayShadowing() {// 쉐도잉 구현.
-
-
-
-
-
-    }
  
 
 
@@ -662,12 +655,16 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
         }// 생성자.
-        bool ValidChecker() {// 이동 또는 회전시 기존 배열에 저장된 위치정보+ 제한선에 걸리는지 체크. (충돌체크임)  
+        bool ValidChecker(int x,int y) {// 이동 또는 회전시 기존 배열에 저장된 위치정보+ 제한선에 걸리는지 체크. (충돌체크임)  
 
             bool res = true;
 
 
+            if (map[y + 1][x] == 2 || map[y + 1][x] == 3) {// 현재 주어진 원소에 대해 하단이 테두리나 쌓인 블록인 경우에는.
 
+                return false;
+
+            }
 
             return res;
 
@@ -681,7 +678,7 @@ class GameManager {// 게임 관리 해주는 클래스.
 
             return true;
         }
-        bool PlaySpawnBlock(int BlockNums, int RotateState) {
+        bool PlaySpawnBlock(int BlockNums, int RotateState) {// 블록을 시작점에 생성하는 함수 
 
 
             Blocks& bm = Blocks::GetInstance(); 
@@ -851,6 +848,96 @@ class GameManager {// 게임 관리 해주는 클래스.
 
             return true;
         }
+        void PlayShadowing() {// ***
+
+            // shadow가 변경되는 시점은 회전, 좌우 이동 이다. 
+            // 쉐도우 4번 원소를 회전과 이동시에 기존꺼 삭제 후 새로운 원형에 그대로 가져오되 충돌지점 설정을 잘 해야 할듯.
+            // 현 도형 위치로부터 하강.
+            // 
+
+            int local_x = this->cur_point.Cursor_X;
+            int local_y = this->cur_point.Cursor_Y;
+            int local_blocknums = this->cur_point.BlocksNums;
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+        void PlaySinkBlocks() {
+
+            for (int i = 0; i < GAME_SINGLE_VSIZE; i++) {
+
+                for (int j = 0; j < GAME_SINGLE_HSIZE; j++) {
+
+
+                    if (map[i][j] == 1) {
+
+                        map[i][j] = 2;
+
+
+                    }
+
+                }
+
+            }
+
+
+
+        }
+        int EraseChecker(int score,int combo) {// down 함수와 연계 필요. -> 삭제후 낙하 구현필요.// 커서주위+4만 체크해보려 했으나 연쇄적으로 체크하기 위해서는 탐색이 더 나은 것 같음.
+
+            int result = 0;
+            int counter = 0;
+
+            for (int i = 0; i < GAME_SINGLE_VSIZE; i++) {
+
+                int cnt = 0;//2 element count
+                for (int j = 0; j < GAME_SINGLE_HSIZE; j++) {
+
+                    if (map[i][j] == 2) {
+                        cnt++;
+                    }
+
+
+                }
+                if (cnt == 18) {
+
+                    for (int j = 1; j < GAME_SINGLE_HSIZE - 1; j++) {
+
+                        map[i][j] = 0;
+                        // 없어진 칸에 대한 물리 적용 필요. -> 최하단부터 한칸씩 하단 체크하며 이동시키기. 
+
+                    }
+                    combo++;
+                    counter++;
+                }
+
+
+            }
+
+            sort();
+
+            result = score + (combo * counter);
+
+            return result;// 점수 반환 
+
+        }
+        void sort() {
+
+
+
+
+
+
+        }
 
 
 
@@ -969,6 +1056,40 @@ class GameManager {// 게임 관리 해주는 클래스.
                          
 
                          PlayMoveBlock(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1);
+
+                         bool DownPossible = true;
+
+                         for (int i = this->cur_point.Cursor_Y; i < this->cur_point.Cursor_Y + 4; i++) {
+
+                             for (int j = this->cur_point.Cursor_X; j < this->cur_point.Cursor_X + 4; j++) {// 4*4 구역 탐색하여 원소찾기.
+
+                                 if (map[i][j] == 1) {
+
+                                   //  gotoxy(50, 50);
+                                    // std::cout <<" ########"<<i<< " "<<j<<" x="<< this->cur_point.Cursor_X <<" y="<< this->cur_point.Cursor_Y;-> local coord logs
+                                   //  gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+                                  
+                                     if (ValidChecker(j, i) == false) {// 원소가 하나라도 더이상 밑으로 내려가지 못하면 굳히기.
+                                         DownPossible = false;
+                                     }
+
+                                 }
+
+                             }
+
+
+
+                         }
+
+
+
+                         if (DownPossible == false) {// 블록 지점에 대해 모두 조사하여 하단 이동 후 더이상 내려갈 곳이 없다면.
+
+                             
+                             PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
+                             PlaySpawnBlock(5,0);// TEST CODE
+                         }
+
                      }
                      break;
                  case STRIKE:// 이동 최하단 충돌지점.
