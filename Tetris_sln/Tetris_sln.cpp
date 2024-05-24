@@ -1348,7 +1348,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                      }
                      break;
                  case STRIKE:// 이동 최하단 충돌지점.
-                     // shadowing need  ***(다음 개발일정에 주로 봐야할 곳 표시)
+                     // shadowing need  ***(다음 개발일정에 주로 봐야할 곳 표시) - 낙하시 줄제거 잘 안됨.?
 
                      for (int y = 0; y < GAME_SINGLE_VSIZE; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
 
@@ -1366,7 +1366,15 @@ class GameManager {// 게임 관리 해주는 클래스.
                      
                     // GMcvm.PlayMapShow(this->map);
                     // system("pause");// 여기서 1이 사라짐.
+                     for (int y = 1; y < GAME_SINGLE_VSIZE - 1; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
 
+                         for (int x = 1; x < GAME_SINGLE_HSIZE - 1; x++) {
+                             if (map[y][x] == 1) {
+                                 map[y][x] = 0;
+
+                             }
+                         }
+                     }
                      int temp_score = 0;
                      do {
                          temp_score = EraseChecker(this->Score, this->Combo);// 압축
@@ -1377,7 +1385,7 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
                      } while (temp_score != this->Score);
-                     // 새로운 블록 스폰하는 코드 
+                     /*
                      for (int y = 1; y < GAME_SINGLE_VSIZE - 1; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
 
                          for (int x = 1; x < GAME_SINGLE_HSIZE - 1; x++) {
@@ -1386,7 +1394,8 @@ class GameManager {// 게임 관리 해주는 클래스.
 
                              }
                          }
-                     }
+                     }*/
+
                      PlaySpawnBlock(3, 0);// TEST CODE
                      PlayMoveShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                      DownPossible = true;
