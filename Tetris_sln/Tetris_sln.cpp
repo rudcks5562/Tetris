@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <conio.h>
 #include <queue>
+#include <Array>
 
 //■ ▦ ▣ 블록 글자모음.
 
@@ -585,7 +586,7 @@ public:
                 }
                 else if (maps[i][j] == 4) {// shadowing 
 
-                    std::cout << "▒";
+                    std::cout << "##";
 
                 }
                 else if(maps[i][j]==0) {
@@ -637,6 +638,15 @@ class GameManager {// 게임 관리 해주는 클래스.
            int Cursor_Y;
            int BlocksNums;
            int RotateState;
+
+           PlayerPointer& operator=(const PlayerPointer& rhs) {// 대입연산자.
+               this->Cursor_X = rhs.Cursor_X;
+               this->Cursor_Y = rhs.Cursor_Y;
+               this->BlocksNums = rhs.BlocksNums;
+               this->RotateState = rhs.RotateState;
+               return *this;
+        }
+
          } typedef pp;
 
         pp cur_point;
@@ -843,29 +853,220 @@ class GameManager {// 게임 관리 해주는 클래스.
 
             return true;
         }
-        void PlayShadowing() {// ***
+        void PlayMoveShadow(int x_input,int y_input) {// 커서를 임시로 이분탐색을 통해 최적의 커서위치(y값:세로축)를 찾는다. 
 
-            // shadow가 변경되는 시점은 회전, 좌우 이동 이다. 
-            // 쉐도우 4번 원소를 회전과 이동시에 기존꺼 삭제 후 새로운 원형에 그대로 가져오되 충돌지점 설정을 잘 해야 할듯.
-            // 현 도형 위치로부터 하강.
-            // 
+            // 매개변수는 현재 커서의 위치.
+            Blocks& bm = Blocks::GetInstance();
+            
+            bool pass{ true };
+            pp next_point{};
 
-            int local_x = this->cur_point.Cursor_X;
-            int local_y = this->cur_point.Cursor_Y;
-            int local_blocknums = this->cur_point.BlocksNums;
+            next_point = this->cur_point;// 대입
 
-
-
-
+            int rec_x = x_input;// 최적 쉐도우 커서 위치 
+            int rec_y = y_input;
 
 
+            int left = y_input;
+            int right = GAME_SINGLE_VSIZE-1-3;//Y value 
+            // x좌표는 그대로 받아오고 y축 좌표는 2분탐색을 사용해 최적의 장소를 찾는다. 
+            next_point.Cursor_X = x_input;
+
+            while (left <= right) {
+
+
+                int mid = (left + right) / 2;
+               
+                next_point.Cursor_Y = mid;
+                pass = true;//블록 놓을 수 있는지 
+               // std::cout << " mid= " << mid;// LOG 
+        
+                for (int y = 0; y < 4; y++) {
+
+                    for (int x = 0; x < 4; x++) {
+                        int elements = bm.Get_Block_One(next_point.RotateState, y, x, next_point.BlocksNums);
+
+                            if (map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 2 && map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 3) {// 2,3 가 아닌 케이스들에 대하여 
+
+                                continue;
+
+                            }
+                            else if (elements == 1 && (map[next_point.Cursor_Y + y][next_point.Cursor_X + x] == 2 || map[next_point.Cursor_Y + y][next_point.Cursor_X + x] == 3)) {// 2 나 3이 겹치는 곳에 블록이 생성되야한다면 
+
+
+
+                                pass = false;
+                            }
+
+
+                        }
+                    }// 변환된 값의 4*4를 유효 체크해준다. 
+
+                    if (!pass) {// pass가 false면 mid가 right가 되어야함
+                        right = mid-1;
+                    }
+                    else {// pass가 true면 left= mid
+
+                        left = mid+1;
+
+                    }
+
+
+
+                }
+                        if (CursorLimitChecker(next_point.Cursor_X,right) == true ) {
+                            rec_y = right;
+                        }
 
 
 
 
+            for (int y = 0; y < GAME_SINGLE_VSIZE; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
+
+                for (int x = 0; x < GAME_SINGLE_HSIZE; x++) {
+
+                    if (map[y][x] == 4) {// 쉐도우 삭제 
+                        map[y][x] = 0;
+                    }
+
+
+                }
+            }// 이동 이전꺼는 지우고 
+
+            next_point.Cursor_Y = rec_y;
+
+            //std::cout << "cursor coord= " << next_point.Cursor_X << next_point.Cursor_Y;
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+                    int elements = bm.Get_Block_One(next_point.RotateState, y, x, next_point.BlocksNums);
+
+                    if (map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 2 && map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 3&& map[next_point.Cursor_Y + y][next_point.Cursor_X + x]!=1) {// 2,3 가 아닌 케이스들에 대하여 
+                        if (elements == 1) {
+                            map[next_point.Cursor_Y + y][next_point.Cursor_X + x] = 4;
+                           // std::cout << "cursor coord= " << next_point.Cursor_X+x <<" y= " << next_point.Cursor_Y+y;
+                        }
+                        else {
+                            map[next_point.Cursor_Y + y][next_point.Cursor_X + x] = 0;
+                        }
+                       
+
+                    }
+
+                }
+
+
+            }
+
+
+
+              
 
 
         }
+        void PlayRotateShadow(int x_input, int y_input) {//커서를 임시로 아래로 이동시켜 최적의 커서위치에서 쉐도우를 만든다. <로테이션 정보 변경후에 사용하도록 한다>
+
+            Blocks& bm = Blocks::GetInstance();
+
+            bool pass{ true };
+            pp next_point{};
+
+            next_point = this->cur_point;
+
+            int rec_x = x_input;
+            int rec_y = y_input;
+
+
+            int left = 1;
+            int right = VERTICAL_SIZE-3-1;//Y value 
+
+            while (left <= right) {
+
+
+                int mid = (left + right) / 2;
+                next_point.Cursor_X = x_input;
+                next_point.Cursor_Y = mid;
+                pass = true;
+
+                for (int y = 0; y < 4; y++) {
+
+                    for (int x = 0; x < 4; x++) {
+                        int elements = bm.Get_Block_One(next_point.RotateState, y, x, next_point.BlocksNums);
+
+                        if (map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 2 && map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 3) {// 2,3 가 아닌 케이스들에 대하여 
+
+                            continue;
+
+                        }
+                        else if (elements == 1 && (map[next_point.Cursor_Y + y][next_point.Cursor_X + x] == 2 || map[next_point.Cursor_Y + y][next_point.Cursor_X + x] == 3)) {// 2 나 3이 겹치는 곳에 블록이 생성되야한다면 
+
+
+
+                            pass = false;
+                        }
+
+
+                    }
+                }// 변환된 값의 4*4를 유효 체크해준다. 
+
+                if (!pass) {// pass가 false면 mid가 right가 되어야함
+                    right = mid-1;
+                }
+                else {// pass가 true면 left= mid
+
+                    left = mid+1;
+                
+                }
+
+
+
+            }
+            if (CursorLimitChecker(next_point.Cursor_X, right) == true) {
+                rec_y = right;
+            }
+
+
+            for (int y = 0; y < GAME_SINGLE_VSIZE; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
+
+                for (int x = 0; x < GAME_SINGLE_HSIZE; x++) {
+
+                    if (map[y][x] == 4) {// 쉐도우 삭제 
+                        map[y][x] = 0;
+                    }
+
+
+                }
+            }// 회전 이전꺼는 지우고 
+
+            next_point.Cursor_Y = rec_y;
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+                    int elements = bm.Get_Block_One(next_point.RotateState, y, x, next_point.BlocksNums);
+
+                    if (map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 2 && map[next_point.Cursor_Y + y][next_point.Cursor_X + x] != 3) {// 2,3 가 아닌 케이스들에 대하여 
+                        if (elements == 1) {
+                            map[next_point.Cursor_Y + y][next_point.Cursor_X + x] = 4;
+                        }
+                        else {
+                            map[next_point.Cursor_Y + y][next_point.Cursor_X + x] = elements;
+                        }
+
+
+                    }
+
+                }
+
+
+            }
+
+
+        }
+
+
+
         void PlaySinkBlocks() {
 
             for (int i = 0; i < GAME_SINGLE_VSIZE; i++) {
@@ -1022,6 +1223,7 @@ class GameManager {// 게임 관리 해주는 클래스.
             int cur_rotate = 0;// 넘버링과 회전 변수에 랜덤함수 필요 ***(다음 개발일정에 주로 봐야할 곳 표시)
             
             PlaySpawnBlock(cur_blocknums, cur_rotate);//2가 없으면 그냥 뜨게 하였음. 
+            PlayMoveShadow(this->cur_point.Cursor_X,this->cur_point.Cursor_Y);
             GMcvm.PlayMapShow(this->map);
             std::cout << "?";
 
@@ -1048,6 +1250,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                              cur_rotate = 3;
                          }
                      }
+                     PlayRotateShadow(this->cur_point.Cursor_X,this->cur_point.Cursor_Y);
                      break;
 
                  case AD:// 각도변환 --90'
@@ -1062,7 +1265,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                          }
 
                      }
-
+                     PlayRotateShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                      break;
 
                  case ML:// 이동 왼쪽
@@ -1071,7 +1274,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                          
 
                          PlayMoveBlock(this->cur_point.Cursor_X-1 , this->cur_point.Cursor_Y);
-
+                         PlayMoveShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                      }
                  
                      break;
@@ -1081,6 +1284,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                      if (CursorLimitChecker(this->cur_point.Cursor_X + 1, this->cur_point.Cursor_Y)) {
                          
                          PlayMoveBlock(this->cur_point.Cursor_X+1 , this->cur_point.Cursor_Y);
+                         PlayMoveShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                      }
                      break;
 
@@ -1107,10 +1311,11 @@ class GameManager {// 게임 관리 해주는 클래스.
 
                              PlaySpawnBlock(3, 0);// TEST CODE
                              DownPossible = true;
+                             break;
                          }
 
                          PlayMoveBlock(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1);
-
+                         PlayMoveShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                         
 
                          for (int i = this->cur_point.Cursor_Y; i < this->cur_point.Cursor_Y + 4; i++) {
@@ -1145,9 +1350,45 @@ class GameManager {// 게임 관리 해주는 클래스.
                  case STRIKE:// 이동 최하단 충돌지점.
                      // shadowing need  ***(다음 개발일정에 주로 봐야할 곳 표시)
 
-                     //4 를 1로 바꾸는 코드(기존 1 제거후) 
-                     // 새로운 블록 스폰하는 코드 
+                     for (int y = 0; y < GAME_SINGLE_VSIZE; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
 
+                         for (int x = 0; x < GAME_SINGLE_HSIZE; x++) {
+
+                             if (map[y][x] == 4) {// 쉐도우 변경 
+                                 map[y][x] = 2;
+                             }
+
+
+
+                         }
+                     }
+                     for (int y = 1; y < GAME_SINGLE_VSIZE-1; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
+
+                         for (int x = 1; x < GAME_SINGLE_HSIZE-1; x++) {
+                             if (map[y][x] != 2) {
+                                 map[y][x] == 0;
+                                 std::cout << "y= " << y << "x =" << x;
+                             }
+                         }
+                     }
+                     
+
+                     
+
+                     int temp_score = 0;
+                     do {
+                         temp_score = EraseChecker(this->Score, this->Combo);// 압축
+                         if (temp_score != this->Score) {
+                             this->Score += temp_score;
+                             this->Combo++;
+                         }
+
+
+                     } while (temp_score != this->Score);
+                     // 새로운 블록 스폰하는 코드 
+                     PlaySpawnBlock(3, 0);// TEST CODE
+                     PlayMoveShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+                     DownPossible = true;
 
                      break;
                  }
