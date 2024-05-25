@@ -9,18 +9,7 @@
 
 //■ ▦ ▣ 블록 글자모음.
 
-// 전처리 구역 
-#define VERTICAL_SIZE 40// 메인메뉴 수직 사이즈
-#define HORIZONTAL_SIZE 29// 메인메뉴 수평 사이즈 
-#define MAGIC_KEY 224// 방향키 입력 선입력자
-#define MENU_LIST 5// 메인메뉴 조작 선택자 길이
 
-#define MENU_Y_COORD 20// 메뉴 방향키 조작 시작좌표
-#define MENU_CHOICEBAR_X 60//위와같음.
-#define GAME_SINGLE_X 22// 싱글플레이 콘솔 커서 시작점.
-#define GAME_SINGLE_Y 1
-#define GAME_SINGLE_VSIZE 30
-#define GAME_SINGLE_HSIZE 20
 
 enum KEYBOARD// 키보드 입력 224 다음에 들어오는 숫자들.
 {
@@ -70,7 +59,7 @@ private:
     {};
     ~Blocks() {};
     Blocks(const Blocks& bref) {};// 상속 복사 생성 금지.
-    Blocks& operator = (const Blocks & ref){};
+    Blocks& operator = (const Blocks& ref) { return *this; };
 
 public:
     const int Block1[4][4][4] = {
@@ -261,7 +250,9 @@ public:
             return Block7[RotateAngle][y][x];
             break;
 
-
+        default:
+            return -1;
+            break;
         }
 
     }
@@ -288,10 +279,16 @@ public:
     int Local_X;
     int prev_Y;// 숨기기 위한 좌표.
     int prev_X;
+    const int MAGIC_KEY ;
+    const int MENU_LIST;
+    const static int MENU_Y_COORD=20;
+    const static int MENU_CHOICEBAR_X=60;
+
+
     boolean Choice_flag;// 메인메뉴 스페이스 입력 이벤트 플래그 
 
     KeyManager()
-        :input{ 0 }, Local_Y{ MENU_Y_COORD }, Local_X{ MENU_CHOICEBAR_X }, prev_Y{ 0 }, Choice_flag{ false }, prev_X{ 0 }
+        :input{ 0 }, Local_Y{ MENU_Y_COORD }, Local_X{ MENU_CHOICEBAR_X }, prev_Y{ 0 }, Choice_flag{ false }, prev_X{ 0 }, MENU_LIST{ 5 }, MAGIC_KEY{224}
     {
     }
 
@@ -300,7 +297,9 @@ public:
 
         switch (Select_Nums)
         {
-        case 1:
+        default:
+            break;
+        case 1: 
 
 
 
@@ -340,7 +339,9 @@ public:
                 case DOWN: Local_Y++;
                     break;
 
+                default:
 
+                    break;
                 }
 
             }
@@ -435,8 +436,19 @@ class ConsoleViewManager {
 
 public:
 
+
+    const int MENU_LIST;
+    const int MENU_Y_COORD;
+    const int MENU_CHOICEBAR_X;
+    const int GAME_SINGLE_X;// 싱글플레이 콘솔 커서 시작점.
+    const int GAME_SINGLE_Y;
+    const  static int GAME_SINGLE_VSIZE=30;
+    const static int GAME_SINGLE_HSIZE=20;
+    const int VERTICAL_SIZE;// 메인메뉴 수직 사이즈
+    const int HORIZONTAL_SIZE;// 메인메뉴 수평 사이즈 
+
     ConsoleViewManager()
-       
+        :MENU_LIST{ 5 }, MENU_Y_COORD{ 20 }, MENU_CHOICEBAR_X{ 60 }, GAME_SINGLE_X{ 22 }, GAME_SINGLE_Y{ 1 }, VERTICAL_SIZE{ }, HORIZONTAL_SIZE{29}
     {
 
 
@@ -533,7 +545,7 @@ public:
     void PlayLine() {// singleplay ui 라인선 그리기
 
 
-
+        
     }
     void PlayDescription() {// 싱글플레이 부가설명과 스코어 그리기
 
@@ -562,7 +574,7 @@ public:
 
     void PlayMapShow(int (*maps)[GAME_SINGLE_HSIZE]) {// 기록배열로부터 맵 갱신 cvm이므로 그림만 그린다. 
 
-        // 로직
+        // 로직 
         // 게임 플레이 하다가 진행중 블록에 하단 이동에 대한 충돌이 일어남. 또는 시작 때
         // 쉐도잉 위치에 적재(1의 경우에만)
         // 배열 갱신
@@ -622,13 +634,20 @@ public:
 
 class GameManager {// 게임 관리 해주는 클래스.
 
+
+
+
     private:
 
+        const static int GAME_SINGLE_VSIZE=30;
+        const static int GAME_SINGLE_HSIZE=20;
+        const int VERTICAL_SIZE;// 메인메뉴 수직 사이즈
+        const int HORIZONTAL_SIZE;// 메인메뉴 수평 사이즈 
         int GameState;// 게임 진행 가능 여부 
         int map[GAME_SINGLE_VSIZE][GAME_SINGLE_HSIZE];// size 미정임 , 벡터를 쓸 이유가 없음 = 테트리스 플레이는 고정된 사각형 내부에서 진행하므로.. 
 
         int Score;
-        int Combo;
+        int Combo; 
 
         KeyManager GMkm;// 게임매니저 내부의 키매니저 
         ConsoleViewManager GMcvm;// 게임매니저 내부 콘솔뷰매니저.
@@ -652,8 +671,13 @@ class GameManager {// 게임 관리 해주는 클래스.
         pp cur_point;
 
     public:
+
+
+
+
+
         GameManager()
-            :map{}, Score{ 0 }, Combo{ 0 }, GameState{ 0 }, GMcvm{}, GMkm{}, cur_point{}
+            :map{}, Score{ 0 }, Combo{ 0 }, GameState{ 0 }, GMcvm{}, GMkm{}, cur_point{}, VERTICAL_SIZE{40}, HORIZONTAL_SIZE{29}
         {
             
 
@@ -1237,6 +1261,8 @@ class GameManager {// 게임 관리 해주는 클래스.
                  
 
                  switch (cmd) {// 입력된 키에 따른 명령 수행.
+                 default:
+                     break;
 
                  case AP:// 각도변환 ++90'
 
