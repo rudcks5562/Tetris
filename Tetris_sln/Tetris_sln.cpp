@@ -996,14 +996,14 @@ class GameManager {// 게임 관리 해주는 클래스.
             bool pass{ true };
             pp next_point{};
 
-            next_point = this->cur_point;
+            next_point = (cur_point);
 
             int rec_x = x_input;
             int rec_y = y_input;
 
 
             int left = 1;
-            int right = VERTICAL_SIZE-3-1;//Y value 
+            int right = GAME_SINGLE_VSIZE-3-1;//Y value 
 
             while (left <= right) {
 
@@ -1012,7 +1012,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                 next_point.Cursor_X = x_input;
                 next_point.Cursor_Y = mid;
                 pass = true;
-
+                
                 for (int y = 0; y < 4; y++) {
 
                     for (int x = 0; x < 4; x++) {
@@ -1049,7 +1049,7 @@ class GameManager {// 게임 관리 해주는 클래스.
             if (CursorLimitChecker(next_point.Cursor_X, right) == true) {
                 rec_y = right;
             }
-
+            std::cout << right<<"?"<<left<<"#";
 
             for (int y = 0; y < GAME_SINGLE_VSIZE; y++) {// 최적화 필요.. 변경이전 쉐도우 커서의 위치를 따로 저장한 후 이를 활용하도록 하자.
 
@@ -1526,7 +1526,7 @@ class MainMenu {// 메인메뉴를 위한 UI 클래스
 
 
 };
-
+// 3번각도가 1번과 차이나서 공중에 뜨는듯 보인다.
 
 
 int main()
