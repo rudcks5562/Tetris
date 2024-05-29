@@ -18,7 +18,8 @@ enum KEYBOARD// 키보드 입력 224 다음에 들어오는 숫자들.
     RIGHT = 77,
     DOWN = 80,
     ENTER= 13,
-    SPACE=32
+    SPACE=32,
+    QUIT= 81
 };
 enum cmds {
 
@@ -321,10 +322,11 @@ public:
 
     }
 
-    void Listen_key_Menu() {// 
-
+    int  Listen_key_Menu() {// 
+        bool Choice_flag = false;
         while (!Choice_flag) {// 키보드 입력 받아서 space로 결정하는 코드 
             Sleep(50);
+            
             input = _getch();// 키보드 입력 받기 
             prev_Y = Local_Y;
             if (input == MAGIC_KEY) {// 얘네는 입력이 2개로 나눠서 들어온다 방향키
@@ -338,19 +340,16 @@ public:
                     break;
                 case DOWN: Local_Y++;
                     break;
-
                 default:
 
                     break;
                 }
 
             }
-            else if (input == SPACE) {
-
-                gotoxy(20, 20);// TEST CODE
-                Choice_flag = true;
-
-
+            else if (input != MAGIC_KEY) {
+                if (input == SPACE) {
+                    Choice_flag = true;
+                }
             }
 
             if (Local_Y > MENU_LIST) {// 0~5 1: single , 2: multi, 3: rank , 4: option, ,5: EXIT 
@@ -370,6 +369,36 @@ public:
 
             gotoxy(Local_X, Local_Y + MENU_Y_COORD);
             std::cout << "<< 선택됨";
+
+            if (Choice_flag == true&&Local_Y==1) {// single start!
+
+                Sleep(700);
+                system("cls");
+                Sleep(700);
+                std::cout << Choice_flag<<"?#";
+
+                return 1;
+            }
+            else if (Choice_flag == true && Local_Y == 2) {// multi
+                return 2;
+            }
+            else if (Choice_flag == true && Local_Y == 3) {//rank
+                return 3;
+            }
+            else if (Choice_flag == true && Local_Y == 4) {//option
+                return 4;
+
+            }
+            else if (Choice_flag == true && Local_Y == 5) {// exit
+                return 5;
+            }
+            else {
+
+
+
+                continue;
+            }
+           
         }
     }
 
@@ -617,9 +646,6 @@ public:
 
 
 
-
-
-
     }// checked
 
     
@@ -700,10 +726,40 @@ class GameManager {// 게임 관리 해주는 클래스.
         }
         bool CursorLimitChecker(int next_x,int next_y) {// 커서가 배열 사이즈 밖으로 나가지 못하도록 움직임 제한.
 
-        
+            /*
             if (next_x < 0 || next_x >= GAME_SINGLE_HSIZE-1 || next_y < 0 || next_y >= GAME_SINGLE_VSIZE-1) {
                 return false;
            }
+           */
+            Blocks& bm = Blocks::GetInstance();
+
+            for (int y = 0; y < 4; y++) {
+
+                for (int x = 0; x < 4; x++) {
+                    int elements = bm.Get_Block_One(this->cur_point.RotateState, y, x, this->cur_point.BlocksNums);
+
+                    if (map[next_y + y][next_x + x] != 2 && map[next_y + y][next_x + x] != 3) {// 2,3 가 아닌 케이스들에 대하여 
+
+                        continue;
+
+                    }
+                    else if (elements == 1 && (map[next_y + y][next_x + x] == 2 || map[next_y + y][next_x + x] == 3)) {// 2 나 3이 겹치는 곳에 블록이 생성되야한다면 
+
+
+
+                        return false;
+                    }
+
+
+                }
+            }// 현재 커서위치에서 4*4를 유효 체크해준다. 
+
+
+
+
+
+
+
 
             return true;
         }
@@ -1200,7 +1256,48 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
 
+        void MainMenu() {
 
+            int read_key_res=0;
+
+                GMcvm.MainLine();
+                GMcvm.MainLogo();
+                GMcvm.MainChoice();
+
+
+           
+            while (true) {
+
+
+                read_key_res = GMkm.Listen_key_Menu();//1~5
+                std::cout << "read_key" << read_key_res;
+                if (read_key_res==1) {// do single
+
+                    Test_Play();
+                    Sleep(500);
+                    system("cls");
+                }
+                else if (read_key_res < 0) {
+
+                    return;
+                }
+                else if (read_key_res == 2) {//multi
+
+                }
+                else if (read_key_res == 3) {//rank
+
+                }
+                else if (read_key_res == 4) {//opt
+
+                }
+                else if (read_key_res == 5) {
+                    return ;
+                }
+
+            }
+
+
+        }
 
 
 
@@ -1229,24 +1326,14 @@ class GameManager {// 게임 관리 해주는 클래스.
 
                 }
             }
-
-            GMcvm.PlayMapShow(this->map);
-
-
             // INIT ---
 
-
-
-
-
-
-
-
-
+            int next_blocknums = rand()%7;
             int cur_blocknums = 3;
             int cur_rotate = 0;// 넘버링과 회전 변수에 랜덤함수 필요 ***(다음 개발일정에 주로 봐야할 곳 표시)
-            
-            PlaySpawnBlock(cur_blocknums, cur_rotate);//2가 없으면 그냥 뜨게 하였음. 
+            bool StateChecker = false;
+
+            StateChecker=PlaySpawnBlock(cur_blocknums, cur_rotate);//2가 없으면 그냥 뜨게 하였음. 
             PlayMoveShadow(this->cur_point.Cursor_X,this->cur_point.Cursor_Y);
             GMcvm.PlayMapShow(this->map);
             std::cout << "?";
@@ -1334,9 +1421,15 @@ class GameManager {// 게임 관리 해주는 클래스.
 
                              } while (temp_score != this->Score);
 
-
-                             PlaySpawnBlock(3, 0);// TEST CODE
+                             cur_blocknums = next_blocknums;
+                             next_blocknums = rand() % (7-1+1)+1;
+                             StateChecker = PlaySpawnBlock(cur_blocknums, 0);// TEST CODE
+                             if (StateChecker != true) {
+                                 GameState = 0;
+                                 continue;
+                             }
                              DownPossible = true;
+
                              break;
                          }
 
@@ -1421,9 +1514,15 @@ class GameManager {// 게임 관리 해주는 클래스.
                              }
                          }
                      }*/
-
-                     PlaySpawnBlock(3, 0);// TEST CODE
+                     cur_blocknums = next_blocknums;
+                     next_blocknums = rand() % (7 - 1 + 1) + 1;
+                     StateChecker=PlaySpawnBlock(cur_blocknums, 0);// TEST CODE
+                     if (StateChecker != 1) {
+                         GameState = 0;
+                         continue;
+                     }
                      PlayMoveShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
+
                      DownPossible = true;
 
                      break;
@@ -1459,85 +1558,16 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
 
-class MainMenu {// 메인메뉴를 위한 UI 클래스
-
-    public:
-
-        //KeyManager km;// test code
-
-
-
-        MainMenu() {// 생성자.
-            gotoxy(0, 0);
-            //MakeLine();
-            //Show_User_Choice();
-            //Make_Logo();
-            //Show_User_Choice();
-           // km.Listen_key_Menu();
-
-           // std::cout << "SELECT CONFIRMED!";// check comp TEST CODE!!
-
-    }
-
-
-
-
-
-
-
-
-    
-    void Move_OptionView() {// lang 같은 옵션 조작 메뉴 진입.
-    
-    
-        
-
-
-    
-    
-    
-    
-    
-    }
-
-
-
-
-
-    void Move_Back_Main() {// 메인메뉴로 돌아오기.
-
-
-
-
-
-
-    }
-    void Exit() {// 콘솔 종료.
-
-
-
-
-
-
-    }
-
-
-
-
-
-};
-// 3번각도가 1번과 차이나서 공중에 뜨는듯 보인다.
-
 
 int main()
 {
 
     CursorView(0);//커서 숨기는 함수 
-    //MainMenu menu {};
+    
     
     GameManager gm{};
-    gm.Test_Play();// 싱글 플레이 테스트환경 시작.
-
+    //gm.Test_Play();// 싱글 플레이 테스트환경 시작.
+    gm.MainMenu();
 
 
 
