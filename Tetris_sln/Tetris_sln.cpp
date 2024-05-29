@@ -477,7 +477,7 @@ public:
     const int HORIZONTAL_SIZE;// 메인메뉴 수평 사이즈 
 
     ConsoleViewManager()
-        :MENU_LIST{ 5 }, MENU_Y_COORD{ 20 }, MENU_CHOICEBAR_X{ 60 }, GAME_SINGLE_X{ 22 }, GAME_SINGLE_Y{ 1 }, VERTICAL_SIZE{ }, HORIZONTAL_SIZE{29}
+        :MENU_LIST{ 5 }, MENU_Y_COORD{ 20 }, MENU_CHOICEBAR_X{ 60 }, GAME_SINGLE_X{ 22 }, GAME_SINGLE_Y{ 1 }, VERTICAL_SIZE{40}, HORIZONTAL_SIZE{29}
     {
 
 
@@ -1402,36 +1402,39 @@ class GameManager {// 게임 관리 해주는 클래스.
                      break;
 
                  case MD:// 이동 하단
-                     
+                     if (DownPossible == false) {// 블록 지점에 대해 모두 조사하여 하단 이동 후 더이상 내려갈 곳이 없다면.(바로굳게 하려면 여기를 하단으로 내리면 된다.)
+
+
+                         PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
+                         std::cout << "sinked!" << DownPossible << "^^";
+                         int temp_score = 0;
+                         do {
+                             temp_score = EraseChecker(this->Score, this->Combo);// 압축
+                             if (temp_score != this->Score) {
+                                 this->Score += temp_score;
+                                 this->Combo++;
+                             }
+
+
+                         } while (temp_score != this->Score);
+
+                         cur_blocknums = next_blocknums;
+                         next_blocknums = rand() % (7 - 1 + 1) + 1;
+                         StateChecker = PlaySpawnBlock(cur_blocknums, 0);// TEST CODE
+                         if (StateChecker != true) {
+                             GameState = 0;
+                             continue;
+                         }
+                         DownPossible = true;
+
+
+                         GMcvm.PlayMapShow(this->map);
+
+                         continue;
+                     }
                      if (CursorLimitChecker(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1)) {
                          
-                         if (DownPossible == false) {// 블록 지점에 대해 모두 조사하여 하단 이동 후 더이상 내려갈 곳이 없다면.(바로굳게 하려면 여기를 하단으로 내리면 된다.)
 
-
-                             PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
-
-                             int temp_score = 0;
-                             do {
-                                 temp_score = EraseChecker(this->Score, this->Combo);// 압축
-                                 if (temp_score != this->Score) {
-                                     this->Score += temp_score;
-                                     this->Combo++;
-                                 }
-
-
-                             } while (temp_score != this->Score);
-
-                             cur_blocknums = next_blocknums;
-                             next_blocknums = rand() % (7-1+1)+1;
-                             StateChecker = PlaySpawnBlock(cur_blocknums, 0);// TEST CODE
-                             if (StateChecker != true) {
-                                 GameState = 0;
-                                 continue;
-                             }
-                             DownPossible = true;
-
-                             break;
-                         }
 
                          PlayMoveBlock(this->cur_point.Cursor_X, this->cur_point.Cursor_Y+1);
                          PlayMoveShadow(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
@@ -1444,11 +1447,11 @@ class GameManager {// 게임 관리 해주는 클래스.
                                  if (map[i][j] == 1) {
 
                                    //  gotoxy(50, 50);
-                                    // std::cout <<" ########"<<i<< " "<<j<<" x="<< this->cur_point.Cursor_X <<" y="<< this->cur_point.Cursor_Y;-> local coord logs
+                                     std::cout <<" $$$$$"<<i<< " "<<j<<" x="<< this->cur_point.Cursor_X <<" y="<< this->cur_point.Cursor_Y;
                                    //  gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                                   
                                      if (ValidChecker(j, i) == false) {// 원소가 하나라도 더이상 밑으로 내려가지 못하면 굳히기.
-                                         
+                                         std::cout << " VC_VALID!"<<i<<" j= "<<j;
                                          DownPossible = false;
                                      }
 
