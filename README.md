@@ -52,3 +52,15 @@
 - 1.01 업데이트 예정 : single play UI 업데이트 예정(스코어, 콤보, 설명, next_block_ui,etc)
 
 ![captet](https://github.com/rudcks5562/Tetris/assets/72645618/8f59985f-dd96-4b80-9265-24a371f83fa8)
+<br>
+
+
+
+- gameplay
+<br>
+
+
+
+
+
+
