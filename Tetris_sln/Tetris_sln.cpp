@@ -803,7 +803,7 @@ class GameManager {// 게임 관리 해주는 클래스.
         bool PlayRotateBlock(int RotateState) {// 현위치에서 블록 회전.-> 쉐도잉과 연계되어야함.+ 이미 state는 정제되어서 제시되어야 함 gm에서 NextRotateState를 5로 나눌것(음수처리 추가).
 
             //기존 좌표에서 4,4 구역을 지우고 회전된 블록을 다시 출력한다. 
-
+           // std::cout << RotateState << "now rostate^^";
             Blocks& bm = Blocks::GetInstance(); 
             int temp_x = this->cur_point.Cursor_X;
             int temp_y = this->cur_point.Cursor_Y;// 로컬 좌표 가져오기
@@ -1276,6 +1276,9 @@ class GameManager {// 게임 관리 해주는 클래스.
                     Test_Play();
                     Sleep(500);
                     system("cls");
+                    GMcvm.MainLine();
+                    GMcvm.MainLogo();
+                    GMcvm.MainChoice();
                 }
                 else if (read_key_res < 0) {
 
@@ -1342,7 +1345,7 @@ class GameManager {// 게임 관리 해주는 클래스.
             bool DownPossible = true;
 
             while (GameState==1) {// 게임진행 가능시 지속적으로 방향키 입력을 받아오도록 한다. 
-                Sleep(150);// 최적화 
+                Sleep(200);// 최적화 
                  int cmd= GMkm.Listen_key_GamePlay();// 키를 읽는다 계속.
 
                  
@@ -1351,7 +1354,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                  default:
                      break;
 
-                 case AP:// 각도변환 ++90'
+                 case AP:// 각도변환 ++90'// up key
 
                      cur_rotate++;
                      if (cur_rotate == 4) {
@@ -1363,10 +1366,11 @@ class GameManager {// 게임 관리 해주는 클래스.
                              cur_rotate = 3;
                          }
                      }
+                    // std::cout << cur_rotate << "CRTT";
                      PlayRotateShadow(this->cur_point.Cursor_X,this->cur_point.Cursor_Y);
                      break;
 
-                 case AD:// 각도변환 --90'
+                 case AD:// 각도변환 --90' enter
                      cur_rotate--;
                      if (cur_rotate < 0) {
                          cur_rotate = 3;
@@ -1406,7 +1410,7 @@ class GameManager {// 게임 관리 해주는 클래스.
 
 
                          PlaySinkBlocks();// 이후 새로시작 해줘야된다. ***
-                         std::cout << "sinked!" << DownPossible << "^^";
+                        // std::cout << "sinked!" << DownPossible << "^^";
                          int temp_score = 0;
                          do {
                              temp_score = EraseChecker(this->Score, this->Combo);// 압축
@@ -1421,6 +1425,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                          cur_blocknums = next_blocknums;
                          next_blocknums = rand() % (7 - 1 + 1) + 1;
                          StateChecker = PlaySpawnBlock(cur_blocknums, 0);// TEST CODE
+                         cur_rotate = 0;
                          if (StateChecker != true) {
                              GameState = 0;
                              continue;
@@ -1447,11 +1452,11 @@ class GameManager {// 게임 관리 해주는 클래스.
                                  if (map[i][j] == 1) {
 
                                    //  gotoxy(50, 50);
-                                     std::cout <<" $$$$$"<<i<< " "<<j<<" x="<< this->cur_point.Cursor_X <<" y="<< this->cur_point.Cursor_Y;
+                                   //  std::cout <<" $$$$$"<<i<< " "<<j<<" x="<< this->cur_point.Cursor_X <<" y="<< this->cur_point.Cursor_Y;
                                    //  gotoxy(this->cur_point.Cursor_X, this->cur_point.Cursor_Y);
                                   
                                      if (ValidChecker(j, i) == false) {// 원소가 하나라도 더이상 밑으로 내려가지 못하면 굳히기.
-                                         std::cout << " VC_VALID!"<<i<<" j= "<<j;
+                                       //  std::cout << " VC_VALID!"<<i<<" j= "<<j;
                                          DownPossible = false;
                                      }
 
@@ -1520,6 +1525,7 @@ class GameManager {// 게임 관리 해주는 클래스.
                      cur_blocknums = next_blocknums;
                      next_blocknums = rand() % (7 - 1 + 1) + 1;
                      StateChecker=PlaySpawnBlock(cur_blocknums, 0);// TEST CODE
+                     cur_rotate = 0;
                      if (StateChecker != 1) {
                          GameState = 0;
                          continue;
